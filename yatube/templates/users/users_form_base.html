@@ -1,0 +1,20 @@
+{% extends "users/users_base.html" %}
+{% block title %}Undefined{% endblock %}
+{% block card_header %}Undefined{% endblock %}
+{% block card_body %}
+  {% include "includes/form_error_handler.html" %}
+  <form method="post"
+    {% if action_url %}
+      action="{% url action_url %}"
+    {% endif %}
+  >
+  {% csrf_token %}
+  {% include 'includes/form_loop.html' %}
+  <div class="col-md-6 offset-md-4">
+    <button type="submit" class="btn btn-primary">
+      {% block button_text %}Undefined{% endblock %}
+    </button>
+    {% block after_button %}{% endblock %}
+  </div>
+  </form>
+{% endblock %}

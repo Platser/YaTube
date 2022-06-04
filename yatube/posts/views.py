@@ -1,10 +1,23 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
+from django.core.cache.utils import make_template_fragment_key
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import CommentForm, PostForm
 from .models import Follow, Group, Post, User
 from .utils import get_posts_page
+
+
+def clear_posts_cache():
+    for cache_name in ['index_page', 'follow_page']:
+        cache_key = make_template_fragment_key(cache_name)
+        cache.delete(cache_key)
+
+
+def clear_follow_cache():
+    cache_key = make_template_fragment_key('follow_page')
+    cache.delete(cache_key)
 
 
 def index(request):
@@ -81,6 +94,7 @@ def post_create(request):
         post = form.save(commit=False)
         post.author = request.user
         post.save()
+        clear_posts_cache()
         return redirect("posts:profile", username=request.user.username)
     return render(request, 'posts/create_post.html', {'form': form})
 
@@ -97,6 +111,7 @@ def post_edit(request, post_id):
     )
     if form.is_valid():
         form.save()
+        clear_posts_cache()
         return redirect("posts:post_detail", post_id=post_id)
     return render(
         request,
@@ -144,6 +159,7 @@ def profile_follow(request, username):
     if (request.user != author
             and not Follow.objects.filter(user=request.user, author=author)):
         Follow.objects.create(user=request.user, author=author)
+        clear_follow_cache()
     return redirect('posts:profile', username=username)
 
 
@@ -154,4 +170,5 @@ def profile_unfollow(request, username):
     """
     author = get_object_or_404(User, username=username)
     Follow.objects.filter(user=request.user, author=author).delete()
+    clear_follow_cache()
     return redirect('posts:profile', username=username)

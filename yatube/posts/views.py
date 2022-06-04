@@ -45,10 +45,14 @@ def profile(request, username):
         request,
         user.posts.all(),
     )
+    following = False
+    if (request.user.is_authenticated
+            and Follow.objects.filter(user=request.user, author=user)):
+        following = True
     context = {
         'author': user,
-        'user': user,
         'page_obj': page_obj,
+        'following': following,
     }
     return render(request, 'posts/profile.html', context)
 
@@ -115,9 +119,18 @@ def add_comment(request, post_id):
 
 @login_required
 def follow_index(request):
+    """
+    Отображает список постов авторов на которые подписан пользователь
+    """
+    following = list(
+        f.author for f in list(Follow.objects.filter(user=request.user))
+    )
+    # following = list(
+    #     f.author for f in list(request.user.following.all())
+    # )
     page_obj = get_posts_page(
         request,
-        request.user.posts.all(),
+        Post.objects.filter(author__in=following)
     )
     context = {
         'page_obj': page_obj,
@@ -127,6 +140,9 @@ def follow_index(request):
 
 @login_required
 def profile_follow(request, username):
+    """
+    Обработка запроса подписки на автора
+    """
     author = get_object_or_404(User, username=username)
     Follow.objects.create(user=request.user, author=author)
     return redirect(request.META.get('HTTP_REFERER'))
@@ -134,6 +150,9 @@ def profile_follow(request, username):
 
 @login_required
 def profile_unfollow(request, username):
+    """
+    Обработка запроса отписки от автора
+    """
     author = get_object_or_404(User, username=username)
     Follow.objects.filter(user=request.user, author=author).delete()
     return redirect(request.META.get('HTTP_REFERER'))

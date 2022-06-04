@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from ..models import Comment, Group, Follow, Post, User
+from ..models import Comment, Follow, Group, Post, User
 
 
 class GroupModelTest(TestCase):

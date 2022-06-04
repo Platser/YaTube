@@ -259,52 +259,80 @@ class PostsPagesTests(TestCase):
         self.assertEqual(response.context['group'], PostsPagesTests.group2)
         self.assertEqual(len(response.context['page_obj']), 0)
 
+
+class FollowTests(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.reader = User.objects.create_user(username='reader')
+        cls.writer = User.objects.create_user(username='writer')
+        cls.post = Post.objects.create(
+            text='Тестовый пост',
+            author=cls.writer,
+        )
+
+    def setUp(self):
+        self.client = Client()
+        self.client.force_login(FollowTests.reader)
+        Follow.objects.create(user=FollowTests.reader,
+                              author=FollowTests.writer)
+
+    def test_follow_index_template(self):
+        response = self.client.get(reverse('posts:follow_index'))
+        self.assertTemplateUsed(response, 'posts/follow.html')
+
+    def test_follow_index_context(self):
+        response = self.client.get(reverse('posts:follow_index'))
+        self.assertEqual(list(response.context['page_obj']),
+                         [FollowTests.post])
+
     def test_subscribe_unsubscribe(self):
+        Follow.objects.all().delete()
         """Пользователь может подписаться и отписаться на/от автора"""
         # Cant subscribe to self
         url = reverse(
             'posts:profile_follow',
-            kwargs={'username': PostsPagesTests.author1.username})
-        response = self.author_client.get(url)
-        self.assertEqual(len(list(PostsPagesTests.author1.follower.all())), 0)
+            kwargs={'username': FollowTests.reader.username})
+        response = self.client.get(url)
+        self.assertEqual(len(list(FollowTests.reader.follower.all())), 0)
         self.assertRedirects(
             response,
             reverse(
                 'posts:profile',
-                kwargs={'username': PostsPagesTests.author1.username}))
+                kwargs={'username': FollowTests.reader.username}))
         # Subscribe
         url = reverse(
             'posts:profile_follow',
-            kwargs={'username': PostsPagesTests.author2.username})
-        response = self.author_client.get(url)
-        self.assertEqual(len(list(PostsPagesTests.author1.follower.all())), 1)
+            kwargs={'username': FollowTests.writer.username})
+        response = self.client.get(url)
+        self.assertEqual(len(list(FollowTests.reader.follower.all())), 1)
         self.assertRedirects(
             response,
             reverse(
                 'posts:profile',
-                kwargs={'username': PostsPagesTests.author2.username}))
+                kwargs={'username': FollowTests.writer.username}))
         # Cant subscribe twice
         url = reverse(
             'posts:profile_follow',
-            kwargs={'username': PostsPagesTests.author2.username})
-        response = self.author_client.get(url)
-        self.assertEqual(len(list(PostsPagesTests.author1.follower.all())), 1)
+            kwargs={'username': FollowTests.writer.username})
+        response = self.client.get(url)
+        self.assertEqual(len(list(FollowTests.reader.follower.all())), 1)
         self.assertRedirects(
             response,
             reverse(
                 'posts:profile',
-                kwargs={'username': PostsPagesTests.author2.username}))
+                kwargs={'username': FollowTests.writer.username}))
         # Unsubscribe
         url = reverse(
             'posts:profile_unfollow',
-            kwargs={'username': PostsPagesTests.author2.username})
-        response = self.author_client.get(url)
-        self.assertEqual(len(list(PostsPagesTests.author1.follower.all())), 0)
+            kwargs={'username': FollowTests.writer.username})
+        response = self.client.get(url)
+        self.assertEqual(len(list(FollowTests.reader.follower.all())), 0)
         self.assertRedirects(
             response,
             reverse(
                 'posts:profile',
-                kwargs={'username': PostsPagesTests.author2.username}))
+                kwargs={'username': FollowTests.writer.username}))
 
 
 class PaginatorViewsTest(TestCase):

@@ -102,3 +102,6 @@ class Follow(models.Model):
 
     class Meta:
         ordering = ('user__username', 'author__username')
+
+    def __str__(self):
+        return f'{self.user.username} follows {self.author.username}'

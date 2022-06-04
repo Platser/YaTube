@@ -9,7 +9,7 @@ from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
 from ..forms import CommentForm, PostForm
-from ..models import Comment, Group, Post, User
+from ..models import Comment, Follow, Group, Post, User
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
@@ -64,6 +64,7 @@ class PostsPagesTests(TestCase):
         )
         # Авторизованный пользователь для тестов
         cls.author1 = User.objects.create_user(username='author1')
+        cls.author2 = User.objects.create_user(username='author2')
         # Пост для тестов
         small_gif = (
             b'\x47\x49\x46\x38\x39\x61\x02\x00'
@@ -258,6 +259,53 @@ class PostsPagesTests(TestCase):
         self.assertEqual(response.context['group'], PostsPagesTests.group2)
         self.assertEqual(len(response.context['page_obj']), 0)
 
+    def test_subscribe_unsubscribe(self):
+        """Пользователь может подписаться и отписаться на/от автора"""
+        # Cant subscribe to self
+        url = reverse(
+            'posts:profile_follow',
+            kwargs={'username': PostsPagesTests.author1.username})
+        response = self.author_client.get(url)
+        self.assertEqual(len(list(PostsPagesTests.author1.follower.all())), 0)
+        self.assertRedirects(
+            response,
+            reverse(
+                'posts:profile',
+                kwargs={'username': PostsPagesTests.author1.username}))
+        # Subscribe
+        url = reverse(
+            'posts:profile_follow',
+            kwargs={'username': PostsPagesTests.author2.username})
+        response = self.author_client.get(url)
+        self.assertEqual(len(list(PostsPagesTests.author1.follower.all())), 1)
+        self.assertRedirects(
+            response,
+            reverse(
+                'posts:profile',
+                kwargs={'username': PostsPagesTests.author2.username}))
+        # Cant subscribe twice
+        url = reverse(
+            'posts:profile_follow',
+            kwargs={'username': PostsPagesTests.author2.username})
+        response = self.author_client.get(url)
+        self.assertEqual(len(list(PostsPagesTests.author1.follower.all())), 1)
+        self.assertRedirects(
+            response,
+            reverse(
+                'posts:profile',
+                kwargs={'username': PostsPagesTests.author2.username}))
+        # Unsubscribe
+        url = reverse(
+            'posts:profile_unfollow',
+            kwargs={'username': PostsPagesTests.author2.username})
+        response = self.author_client.get(url)
+        self.assertEqual(len(list(PostsPagesTests.author1.follower.all())), 0)
+        self.assertRedirects(
+            response,
+            reverse(
+                'posts:profile',
+                kwargs={'username': PostsPagesTests.author2.username}))
+
 
 class PaginatorViewsTest(TestCase):
     @classmethod
@@ -272,7 +320,7 @@ class PaginatorViewsTest(TestCase):
         )
         # пользователи для тестов
         author1 = User.objects.create_user(username='author1')
-        author2 = User.objects.create_user(username='author2')
+        cls.author2 = User.objects.create_user(username='author2')
         # Посты для тестов
         posts = [
             Post(
@@ -281,10 +329,11 @@ class PaginatorViewsTest(TestCase):
                 group=group
             ) for i in range(1, 18)
         ]
-        posts[-1].author = author2
+        posts[-1].author = cls.author2
         posts[-1].group = None
         posts[-2].group = None
         Post.objects.bulk_create(posts)
+        Follow.objects.create(user=cls.author2, author=author1)
         cls.pages = (
             {
                 'url': reverse('posts:index'),
@@ -304,10 +353,17 @@ class PaginatorViewsTest(TestCase):
                 ),
                 'posts_num': 6
             },
+            {
+                'url': reverse(
+                    'posts:follow_index',
+                ),
+                'posts_num': 6
+            },
         )
 
     def setUp(self):
         self.client = Client()
+        self.client.force_login(PaginatorViewsTest.author2)
 
     def test_paginator(self):
         for page in PaginatorViewsTest.pages:

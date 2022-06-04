@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import CommentForm, PostForm
-from .models import Group, Follow, Post, User
+from .models import Follow, Group, Post, User
 from .utils import get_posts_page
 
 
@@ -123,11 +123,8 @@ def follow_index(request):
     Отображает список постов авторов на которые подписан пользователь
     """
     following = list(
-        f.author for f in list(Follow.objects.filter(user=request.user))
+        f.author for f in list(request.user.follower.all())
     )
-    # following = list(
-    #     f.author for f in list(request.user.following.all())
-    # )
     page_obj = get_posts_page(
         request,
         Post.objects.filter(author__in=following)
@@ -144,8 +141,10 @@ def profile_follow(request, username):
     Обработка запроса подписки на автора
     """
     author = get_object_or_404(User, username=username)
-    Follow.objects.create(user=request.user, author=author)
-    return redirect(request.META.get('HTTP_REFERER'))
+    if (request.user != author
+            and not Follow.objects.filter(user=request.user, author=author)):
+        Follow.objects.create(user=request.user, author=author)
+    return redirect('posts:profile', username=username)
 
 
 @login_required
@@ -155,4 +154,4 @@ def profile_unfollow(request, username):
     """
     author = get_object_or_404(User, username=username)
     Follow.objects.filter(user=request.user, author=author).delete()
-    return redirect(request.META.get('HTTP_REFERER'))
+    return redirect('posts:profile', username=username)

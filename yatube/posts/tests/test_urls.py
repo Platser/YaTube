@@ -32,6 +32,7 @@ class PostsURLTests(TestCase):
         cls.authorized_urls = {
             '/create/': 'posts/create_post.html',
             f'/posts/{cls.post.pk}/comment/': None,
+            '/follow/': 'posts/follow.html',
         }
         cls.not_guest_urls = {**cls.author_urls, **cls.authorized_urls}
         cls.all_urls = {

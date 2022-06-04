@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from ..models import Comment, Group, Post, User
+from ..models import Comment, Group, Follow, Post, User
 
 
 class GroupModelTest(TestCase):
@@ -167,3 +167,15 @@ class CommentModelTest(TestCase):
                     comment._meta.get_field(field_name).help_text,
                     help_text
                 )
+
+
+class FollowModelTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.user = User.objects.create_user(username='reader')
+        cls.author = User.objects.create_user(username='writer')
+        cls.follow = Follow.objects.create(user=cls.user, author=cls.author)
+
+    def test_str(self):
+        self.assertEqual(str(FollowModelTest.follow), 'reader follows writer')

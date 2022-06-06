@@ -1,4 +1,3 @@
-from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.core.cache.utils import make_template_fragment_key
@@ -53,14 +52,15 @@ def group_posts(request, slug):
 
 
 def profile(request, username):
-    user = get_object_or_404(get_user_model(), username=username)
+    user = get_object_or_404(User, username=username)
     page_obj = get_posts_page(
         request,
         user.posts.all(),
     )
     following = False
     if (request.user.is_authenticated
-            and Follow.objects.filter(user=request.user, author=user)):
+            and Follow.objects.filter(user=request.user,
+                                      author=user).exists()):
         following = True
     context = {
         'author': user,
@@ -137,12 +137,9 @@ def follow_index(request):
     """
     Отображает список постов авторов на которые подписан пользователь
     """
-    following = list(
-        f.author for f in list(request.user.follower.all())
-    )
     page_obj = get_posts_page(
         request,
-        Post.objects.filter(author__in=following)
+        Post.objects.filter(author__following__user=request.user)
     )
     context = {
         'page_obj': page_obj,

@@ -289,9 +289,9 @@ class FollowTests(TestCase):
         self.assertEqual(list(response.context['page_obj']),
                          [FollowTests.post])
 
-    def test_subscribe_unsubscribe(self):
+    def test_subscribe(self):
         Follow.objects.all().delete()
-        """Пользователь может подписаться и отписаться на/от автора"""
+        """Пользователь может подписаться на автора"""
         # Cant subscribe to self
         url = reverse(
             'posts:profile_follow',
@@ -325,6 +325,9 @@ class FollowTests(TestCase):
             reverse(
                 'posts:profile',
                 kwargs={'username': FollowTests.writer.username}))
+
+    def test_unsubscribe(self):
+        """Пользователь может отподписаться от автора"""
         # Unsubscribe
         url = reverse(
             'posts:profile_unfollow',

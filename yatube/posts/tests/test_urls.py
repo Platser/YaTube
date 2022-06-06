@@ -2,8 +2,8 @@ from http import HTTPStatus
 
 from django.test import Client, TestCase
 
-from ..views import clear_posts_cache
 from ..models import Group, Post, User
+from ..views import clear_posts_cache
 
 
 class PostsURLTests(TestCase):

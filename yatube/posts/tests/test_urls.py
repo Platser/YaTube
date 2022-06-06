@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 from django.test import Client, TestCase
 
+from ..views import clear_posts_cache
 from ..models import Group, Post, User
 
 
@@ -47,6 +48,7 @@ class PostsURLTests(TestCase):
         self.author_client.force_login(PostsURLTests.author)
         self.not_author_client = Client()
         self.not_author_client.force_login(PostsURLTests.not_author)
+        clear_posts_cache()
 
     # Проверяем доступность страниц
     def test_url_guest_access(self):

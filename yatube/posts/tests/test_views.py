@@ -10,6 +10,7 @@ from django.urls import reverse
 
 from ..forms import CommentForm, PostForm
 from ..models import Comment, Follow, Group, Post, User
+from ..views import clear_posts_cache
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
@@ -115,7 +116,7 @@ class PostsPagesTests(TestCase):
             {
                 'url': reverse(
                     'posts:profile',
-                    kwargs={'username': 'author1'}
+                    kwargs={'username': cls.author1.username}
                 ),
                 'context_equal': {
                     'author': cls.author1
@@ -170,6 +171,7 @@ class PostsPagesTests(TestCase):
     def setUp(self):
         self.author_client = Client()
         self.author_client.force_login(PostsPagesTests.author1)
+        clear_posts_cache()
 
     @classmethod
     def tearDownClass(cls):
@@ -276,6 +278,7 @@ class FollowTests(TestCase):
         self.client.force_login(FollowTests.reader)
         Follow.objects.create(user=FollowTests.reader,
                               author=FollowTests.writer)
+        clear_posts_cache()
 
     def test_follow_index_template(self):
         response = self.client.get(reverse('posts:follow_index'))
@@ -377,7 +380,7 @@ class PaginatorViewsTest(TestCase):
             {
                 'url': reverse(
                     'posts:profile',
-                    kwargs={'username': 'author1'}
+                    kwargs={'username': author1.username}
                 ),
                 'posts_num': 6
             },
@@ -392,6 +395,7 @@ class PaginatorViewsTest(TestCase):
     def setUp(self):
         self.client = Client()
         self.client.force_login(PaginatorViewsTest.author2)
+        clear_posts_cache()
 
     def test_paginator(self):
         for page in PaginatorViewsTest.pages:

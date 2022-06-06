@@ -17,3 +17,11 @@ TODO:
         File "C:\projects\hw05_final\venv\lib\site-packages\django\urls\resolvers.py", line 673, in _reverse_with_prefix
             raise NoReverseMatch(msg)
         django.urls.exceptions.NoReverseMatch: Reverse for 'None' not found. 'None' is not a valid view function or pattern name.
+
+
+Questions:
+
+Дмитрий, добрый день!
+Есть следующие воросы пр ревью:
+1) Добавить cache.clear() в setUp() тестов.
+   При добавлении cache.clear() любой из классов unittest, возникают ошибки  FileNotFoundError для тестойво картинки small.gif. Видимо SimpleUploadedFile и LocMemCache как-то связаны. Вместо этого использовал clear_posts_cache() из posts/views.py, которая удаляет кэш страниц "прицельно" по ключу.

@@ -1,8 +1,6 @@
 # YaTube
 ## Революционная социальная сеть следующего поколения
 
-[//]: # ([![CI](https://github.com/yandex-praktikum/hw05_final/actions/workflows/python-app.yml/badge.svg?branch=master)](https://github.com/yandex-praktikum/hw05_final/actions/workflows/python-app.yml))
-
 YaTube - web-приложение реализующее социальную сеть, позволяющее пользователям вести дневники, подписываться друг на друга и оставлять комментарии.
 
 ### Возможности

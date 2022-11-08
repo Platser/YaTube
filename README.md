@@ -1,5 +1,6 @@
 # YaTube
-## Революционная социальная сеть следующего поколения
+
+### Описание
 
 YaTube - web-приложение реализующее социальную сеть, позволяющее пользователям вести дневники, подписываться друг на друга и оставлять комментарии.
 
@@ -16,11 +17,11 @@ YaTube - web-приложение реализующее социальную с
 * SQLite
 
 ### Как запустить проект
-Склонировать из репозитория, затем перейти в каталог:
+Клонировать репозиторий и перейти в корневую директорию проекта:
 
 ```
-git clone git@github.com:Platser/YaTube.git
-cd api_yamdb
+git clone https://github.com/Platser/YaTube.git
+cd YaTube
 ```
 
 Cоздать и активировать виртуальное окружение:
@@ -48,3 +49,26 @@ python3 manage.py migrate
 ```
 python3 manage.py runserver
 ```
+### Решение проблем
+На некоторых ПК при работе с GitBash для Windows команда runserver зависает после вывода "Watching for file changes with StatReloader". В этом случае необходимо определить следующую переменную окружения:
+```
+export PYTHONUNBUFFERED=1
+```
+Выполнение некоторых команд manage.py при работе с GitBash для Windows приводит к возникновению ошибки, например такой:
+```
+Superuser creation skipped due to not running in a TTY.
+```
+В этом случае команду следует запускать, добавив winpty:
+```
+winpty python manage.py createsuperuser
+```
+
+### Важные эндпоинты
+http://127.0.0.1:8000/admin - панель администратора
+
+### Автор
+Денис Малашевич
+Проект разработан в рамках учебного курса Python-разработчик Яндекс.Практикум.
+
+№## Лицензия 
+[Лицензия MIT](https://opensource.org/licenses/MIT)

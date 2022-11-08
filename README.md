@@ -58,7 +58,7 @@ export PYTHONUNBUFFERED=1
 ```
 Superuser creation skipped due to not running in a TTY.
 ```
-В этом случае команду следует запускать, добавив winpty:
+В этом случае команду следует выполнять, добавив winpty:
 ```
 winpty python manage.py createsuperuser
 ```
